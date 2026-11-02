@@ -1,0 +1,46 @@
+defaults:
+  - behavior_ppo_openpi_pi05
+  - _self_
+
+# Single-GPU capacity probe. Full-VLA PPO; no frozen backbone or residual policy.
+# Requires the matching RLinf OmniGibson fork and downloaded BEHAVIOR assets.
+cluster:
+  component_placement:
+    rollout: 0
+    env: 0
+    actor: 0
+
+runner:
+  max_epochs: 1
+  save_interval: -1
+  logger:
+    experiment_name: behavior_pi05_full_vla_cost
+
+env:
+  train:
+    total_num_envs: 1
+    num_env_subprocess: 1
+    rollout_epoch: 1
+    max_steps_per_rollout_epoch: 64
+    video_cfg:
+      save_video: False
+  eval:
+    total_num_envs: 1
+    num_env_subprocess: 1
+    rollout_epoch: 1
+    video_cfg:
+      save_video: False
+
+rollout:
+  model:
+    model_path: ${oc.env:UPRL_PI05_CHECKPOINT}
+
+actor:
+  micro_batch_size: 1
+  global_batch_size: 2
+  model:
+    openpi:
+      train_expert_only: False
+      torch_compile: False
+  fsdp_config:
+    gradient_checkpointing: True
